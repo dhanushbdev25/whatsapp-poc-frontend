@@ -31,16 +31,19 @@ export const authApi = createApi({
 				};
 			},
 			transformResponse: (response: unknown) => {
-				// Response is already transformed by baseApi
+				// Since rawBaseQuery is used, we receive the full backend response structure:
+				// { success: true, data: { accessToken, refreshToken }, message: string, timestamp: string }
 				// In localStorage mode: Backend returns { success: true, data: { accessToken, refreshToken }, ... }
 				// In cookie mode: Backend returns { success: true, data: {}, ... }
 				if (typeof response === 'object' && response !== null) {
+					const backendResponse = response as { success?: boolean; data?: { accessToken?: string; refreshToken?: string } };
+					
 					// If in localStorage mode and tokens are present, store them
-					if (env.VITE_AUTH_MODE === 'localStorage') {
-						const data = response as { accessToken?: string; refreshToken?: string };
-						if (data.accessToken && data.refreshToken) {
-							TokenStorage.setTokens(data.accessToken, data.refreshToken);
-							return { accessToken: data.accessToken, refreshToken: data.refreshToken } as LoginRes;
+					if (env.VITE_AUTH_MODE === 'localStorage' && backendResponse.success === true && backendResponse.data) {
+						const { accessToken, refreshToken } = backendResponse.data;
+						if (accessToken && refreshToken) {
+							TokenStorage.setTokens(accessToken, refreshToken);
+							return { accessToken, refreshToken } as LoginRes;
 						}
 					}
 					// Cookie mode or no tokens: return empty object
