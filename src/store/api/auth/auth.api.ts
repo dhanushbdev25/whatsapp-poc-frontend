@@ -1,0 +1,80 @@
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { rawBaseQuery } from '../baseApi';
+import { logger } from '../../../services/logger/logger.service';
+import { env } from '../../../config/env';
+import TokenStorage from '../../../utils/TokenStorage';
+
+/**
+ * Login response type
+ * After transformation, baseApi returns the data portion
+ * In localStorage mode: { accessToken: string, refreshToken: string }
+ * In cookie mode: {} (empty object)
+ */
+export type LoginRes = Record<string, never> | { accessToken: string; refreshToken: string };
+
+/**
+ * Logout response type
+ * After transformation, baseApi returns the data portion (empty object {} for logout)
+ */
+export type LogoutRes = Record<string, never>;
+
+export const authApi = createApi({
+	reducerPath: 'authApi',
+	baseQuery: rawBaseQuery,
+	endpoints: builder => ({
+		loginUser: builder.mutation<LoginRes, { email: string; password: string }>({
+			query(data) {
+				return {
+					url: 'auth/login',
+					method: 'post',
+					body: data
+				};
+			},
+			transformResponse: (response: unknown) => {
+				// Response is already transformed by baseApi
+				// In localStorage mode: Backend returns { success: true, data: { accessToken, refreshToken }, ... }
+				// In cookie mode: Backend returns { success: true, data: {}, ... }
+				if (typeof response === 'object' && response !== null) {
+					// If in localStorage mode and tokens are present, store them
+					if (env.VITE_AUTH_MODE === 'localStorage') {
+						const data = response as { accessToken?: string; refreshToken?: string };
+						if (data.accessToken && data.refreshToken) {
+							TokenStorage.setTokens(data.accessToken, data.refreshToken);
+							return { accessToken: data.accessToken, refreshToken: data.refreshToken } as LoginRes;
+						}
+					}
+					// Cookie mode or no tokens: return empty object
+					return {} as LoginRes;
+				}
+				logger.error('Login response validation failed', new Error('Invalid response type'), {
+					response
+				});
+				throw new Error('Invalid login response structure');
+			}
+		}),
+
+		logoutUser: builder.mutation<LogoutRes, void>({
+			query: () => ({
+				url: 'auth/logout',
+				method: 'post',
+				credentials: env.VITE_AUTH_MODE === 'cookie' ? 'include' : 'omit'
+			}),
+			transformResponse: (response: unknown) => {
+				// Response is already transformed by baseApi
+				// Backend returns: { success: true, data: {}, message: "Logged out successfully", timestamp: string }
+				// After baseApi transformation: {} (empty object)
+				if (typeof response === 'object' && response !== null) {
+					// Clear tokens from storage (works for both cookie and localStorage modes)
+					TokenStorage.clearTokens();
+					return {} as LogoutRes;
+				}
+				logger.error('Logout response validation failed', new Error('Invalid response type'), {
+					response
+				});
+				throw new Error('Invalid logout response structure');
+			}
+		})
+	})
+});
+
+export const { useLoginUserMutation, useLogoutUserMutation } = authApi;

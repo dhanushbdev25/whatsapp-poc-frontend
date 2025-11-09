@@ -1,0 +1,26 @@
+import { StepIconProps } from '@mui/material/StepIcon';
+import { MdCode as Code } from 'react-icons/md'; // </> icon
+
+const CustomStepIcon = ({ active, completed }: StepIconProps) => {
+	return (
+		<div
+			style={{
+				backgroundColor: active ? '#1976d2' : completed ? '#4caf50' : '#e0e0e0',
+				color: 'white',
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+				borderRadius: '50%',
+				width: 32,
+				height: 32,
+				fontSize: 18,
+				transition: '0.3s'
+			}}
+		>
+			{/* {icon="http://www.w3.org/2000/svg"} if any icon */}
+			<Code style={{ fontSize: 18 }} />
+		</div>
+	);
+};
+
+export default CustomStepIcon;

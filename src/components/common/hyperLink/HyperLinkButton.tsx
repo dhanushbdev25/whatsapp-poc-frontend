@@ -1,0 +1,27 @@
+import { IconButton, Tooltip, IconButtonProps } from '@mui/material';
+import { MdLink as LinkIcon } from 'react-icons/md';
+
+interface HyperlinkIconButtonProps extends IconButtonProps {
+	href: string;
+	title: string;
+	openInNewTab?: boolean;
+}
+
+const HyperlinkIconButton = ({ href, title, openInNewTab = true, ...rest }: HyperlinkIconButtonProps) => {
+	return (
+		<Tooltip title={title}>
+			<IconButton
+				component="a"
+				href={href}
+				target={openInNewTab ? '_blank' : '_self'}
+				rel={openInNewTab ? 'noopener noreferrer' : undefined}
+				aria-label={title}
+				{...rest}
+			>
+				<LinkIcon />
+			</IconButton>
+		</Tooltip>
+	);
+};
+
+export default HyperlinkIconButton;
