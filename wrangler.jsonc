@@ -1,9 +1,8 @@
 {
-    "name": "whatsapp-poc-frontend",
-    "compatibility_date": "2025-11-09",
-    // Option 1: Deploy static assets from Vite's dist
-    "assets": {
-      "directory": "./dist"
-    }
+  "name": "whatsapp-poc-frontend",
+  "compatibility_date": "2025-11-09",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
   }
-  
+}
