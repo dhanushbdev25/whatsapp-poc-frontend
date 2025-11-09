@@ -1,20 +1,22 @@
 import React, { useRef, useState, useEffect } from "react";
 import {
     Button,
-    Grid,
     Typography,
     Box,
     CircularProgress,
-    Container,
     Paper,
-    Chip,
-    Zoom,
-    Slide,
     IconButton,
-    Stack,
-    Divider,
+    Fade,
+    Backdrop,
 } from "@mui/material";
-import { MdCameraswitch, MdPhotoCamera, MdClose, MdCheckCircle } from "react-icons/md";
+import { 
+    CheckCircle
+} from "@mui/icons-material";
+import { 
+    MdFlipCameraIos, 
+    MdCameraAlt
+} from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as bodyPix from "@tensorflow-models/body-pix";
 import "@tensorflow/tfjs";
@@ -27,13 +29,13 @@ interface ReferenceImage {
     blob_url: string;
 }
 
-const API_BASE = "http://20.212.169.167:8000/api/v1";
+const API_BASE_T = "http://20.212.169.167:8000/api/v1";
 
 const VirtualHairstylesTryOn: React.FC = () => {
+    const navigate = useNavigate();
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    const [net, setNet] = useState<any>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
 
@@ -46,14 +48,15 @@ const VirtualHairstylesTryOn: React.FC = () => {
     const [filterImgEl, setFilterImgEl] = useState<HTMLImageElement | null>(null);
 
     const [loading, setLoading] = useState(false);
-    const [processedImage, setProcessedImage] = useState<string | null>(null);
-    const [showResultModal, setShowResultModal] = useState<boolean>(false);
+
+    // Get userId from URL
+    const userId = window.location.pathname.split('/').pop() || '';
 
     // Load reference images (via axios now)
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get(`${API_BASE}/reference_images`, {
+                const res = await axios.get(`${API_BASE_T}/reference_images`, {
                     params: { category: "hairstyles" },
                 });
                 if (res.data?.data?.results) {
@@ -76,7 +79,7 @@ const VirtualHairstylesTryOn: React.FC = () => {
         img.onerror = () => setFilterImgEl(null);
     }, [selectedFilter]);
 
-    // Load model
+    // Load model (for future use)
     useEffect(() => {
         bodyPix
             .load({
@@ -85,7 +88,9 @@ const VirtualHairstylesTryOn: React.FC = () => {
                 multiplier: 1.0,
                 quantBytes: 4,
             })
-            .then(setNet);
+            .then(() => {
+                // Model loaded successfully
+            });
     }, []);
 
     // Start camera
@@ -155,228 +160,493 @@ const VirtualHairstylesTryOn: React.FC = () => {
         return () => cancelAnimationFrame(rafId);
     }, [filterImgEl, cameraFacing, isCameraReady]);
 
-    const capturePhoto = () => {
-        if (!selectedFilter) return Swal.fire("Select a hairstyle first.");
-        const video = videoRef.current;
-        if (!video) return;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d")!;
-        if (cameraFacing === "user") {
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, -video.videoWidth, 0, video.videoWidth, video.videoHeight);
-        } else {
-            ctx.drawImage(video, 0, 0);
-        }
-        setCapturedPhoto(canvas.toDataURL("image/jpeg", 0.9));
-        setProcessedImage(null);
-        setUploadedPhoto(null);
-        setUploadedBlob(null);
-    };
-
-    const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!selectedFilter) return Swal.fire("Select a style first");
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setUploadedBlob(file);
-        const reader = new FileReader();
-        reader.onloadend = () => setUploadedPhoto(reader.result as string);
-        reader.readAsDataURL(file);
-        setCapturedPhoto(null);
-        setProcessedImage(null);
-    };
 
     const handleSend = async () => {
-        const src = capturedPhoto || uploadedPhoto;
-        if (!src || !selectedFilter) return Swal.fire("Take or upload an image first");
+        if (!selectedFilter) return Swal.fire("Please select a hairstyle first");
 
         setLoading(true);
         try {
+            // Capture photo from video if not already captured or uploaded
+            let src = capturedPhoto || uploadedPhoto;
+            let blobToUse = uploadedBlob;
+
+            if (!src) {
+                // Capture photo from video
+                const video = videoRef.current;
+                if (!video) {
+                    Swal.fire("Error", "Camera not ready", "error");
+                    setLoading(false);
+                    return;
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d")!;
+                if (cameraFacing === "user") {
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(video, -video.videoWidth, 0, video.videoWidth, video.videoHeight);
+                } else {
+                    ctx.drawImage(video, 0, 0);
+                }
+                src = canvas.toDataURL("image/jpeg", 0.9);
+                setCapturedPhoto(src);
+            }
+
             const formData = new FormData();
             formData.append("category", "hairstyles");
             formData.append("image_id", selectedFilter.id);
 
-            if (uploadedBlob) {
-                formData.append("src_image", uploadedBlob, "upload.jpg");
+            if (blobToUse) {
+                formData.append("src_image", blobToUse, "upload.jpg");
             } else {
                 const blob = await fetch(src).then((r) => r.blob());
                 formData.append("src_image", blob, "capture.jpg");
             }
 
-            const res = await axios.post(`${API_BASE}/virtual_try_on`, formData, {
+            const res = await axios.post(`${API_BASE_T}/virtual_try_on`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
-            setProcessedImage(res.data?.data?.blob_url || null);
-            setShowResultModal(true);
+            const processedImage = res.data?.data?.blob_url || null;
+            if (processedImage && selectedFilter) {
+                // Navigate to preview screen with state
+                navigate(`/try/${userId}/preview`, {
+                    state: {
+                        processedImage,
+                        selectedFilter,
+                        userId
+                    }
+                });
+            } else {
+                Swal.fire("Error", "Failed to process image", "error");
+            }
         } catch {
-            Swal.fire("Failed to process image");
+            Swal.fire("Error", "Failed to process image", "error");
         } finally {
             setLoading(false);
         }
-    };
-
-    const downloadImage = () => {
-        const a = document.createElement("a");
-        a.href = processedImage!;
-        a.download = `photo-${Date.now()}.jpg`;
-        a.click();
-    };
-
-    const shareImage = async () => {
-        if (!processedImage) return;
-        if (navigator.share) {
-            return navigator.share({
-                title: "Virtual Try-On",
-                text: "Check out my new look!",
-                url: processedImage,
-            });
-        }
-        await navigator.clipboard.writeText(processedImage);
-        Swal.fire("Copied", "Link copied to clipboard", "success");
     };
 
     const handleReset = () => {
         setCapturedPhoto(null);
         setUploadedPhoto(null);
         setUploadedBlob(null);
-        setProcessedImage(null);
-        setShowResultModal(false);
     };
 
     return (
-        <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #000000 0%, #6A0DAD 100%)", pb: 10 }}>
-            <Container maxWidth="md" sx={{ pt: 2 }}>
-                <Typography textAlign="center" sx={{
-                    fontSize: { xs: 22, md: 28 },
-                    fontWeight: 900,
-                    color: "#fff",
-                    mb: 2
-                }}>
-                    Virtual Hairstyles Try-On
-                </Typography>
-
-                <Grid container justifyContent="center">
-                    <Grid>
-                        <Slide in direction="up" timeout={500}>
-                            <Paper sx={{
-                                position: "relative",
-                                borderRadius: 4,
-                                overflow: "hidden",
-                                background: "#fff",
-                                border: "1px solid rgba(10,37,64,0.08)"
-                            }}>
-                                <Box sx={{ position: "relative", background: "#000" }}>
-                                    {!isCameraReady && (
-                                        <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 1.5 }}>
-                                            <CircularProgress size={56} />
-                                            <Typography sx={{ color: "#fff" }}>Preparing camera…</Typography>
-                                        </Box>
-                                    )}
-
-                                    <canvas ref={canvasRef} style={{ width: "100%", minHeight: 500, display: "block", background: "#000" }} />
-                                    <video ref={videoRef} style={{ display: "none" }} playsInline muted autoPlay />
-
-                                    <Box sx={{ position: "absolute", left: 0, right: 0, bottom: { xs: 100, md: 98 }, display: "flex", justifyContent: "center", gap: 3 }}>
-                                        <IconButton onClick={() => setCameraFacing((p) => (p === "user" ? "environment" : "user"))} sx={{ background: "#fff" }}>
-                                            <MdCameraswitch />
-                                        </IconButton>
-
-                                        <Box onClick={capturePhoto} sx={{
-                                            width: 36, height: 36, borderRadius: "50%", background: "#fff", border: "6px solid #ffd9d0", display: "flex", alignItems: "center", justifyContent: "center", cursor: selectedFilter ? "pointer" : "not-allowed", opacity: selectedFilter ? 1 : 0.5
-                                        }}>
-                                            {selectedFilter ? <img src={selectedFilter.blob_url} style={{ width: "90%", height: "90%", borderRadius: "50%" }} /> : <MdPhotoCamera size={28} />}
-                                        </Box>
-
-                                        <label style={{ background: "#fff", width: 38, height: 38, display: "flex", borderRadius: 2, alignItems: "center", justifyContent: "center", cursor: selectedFilter ? "pointer" : "not-allowed" }}>
-                                            📁<input type="file" hidden accept="image/*" disabled={!selectedFilter} onChange={handleUploadImage} />
-                                        </label>
-                                    </Box>
-
-                                    <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", pt: 1, pb: 1.25, px: 1 }}>
-                                        <Box sx={{ display: "flex", gap: 4, overflowX: "auto", pb: 0.5 }}>
-                                            {images.map((img) => {
-                                                const active = selectedFilter?.id === img.id;
-                                                return (
-                                                    <Box key={img.id} onClick={() => setSelectedFilter(img)} sx={{ cursor: "pointer", textAlign: "center" }}>
-                                                        <Box sx={{
-                                                            width: 40, height: 40, borderRadius: "50%", overflow: "hidden",
-                                                            border: active ? "4px solid #ff9c74" : "2px solid #fff"
-                                                        }}>
-                                                            <img src={img.blob_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                                        </Box>
-                                                        <Typography sx={{ color: "#fff", fontSize: 11, maxWidth: 80, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                                                            {img.name}
-                                                        </Typography>
-                                                    </Box>
-                                                );
-                                            })}
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                <Box sx={{ display: "flex", gap: 1, p: 2, background: "#fff" }}>
-                                    <Button fullWidth onClick={handleSend} disabled={loading || !selectedFilter || (!capturedPhoto && !uploadedPhoto)} variant="contained">
-                                        {loading ? <CircularProgress size={20} /> : "Apply Hairstyle"}
-                                    </Button>
-                                    <Button variant="outlined" onClick={handleReset}>Reset</Button>
-                                </Box>
-                            </Paper>
-                        </Slide>
-
-                        {(capturedPhoto || uploadedPhoto) && !processedImage && (
-                            <Slide in direction="up">
-                                <Paper sx={{ mt: 2, p: 2 }}>
-                                    <Typography sx={{ fontWeight: 800 }}>Preview</Typography>
-                                    <Box sx={{ borderRadius: 2, overflow: "hidden", border: "1px solid #ccc", mt: 1 }}>
-                                        <img src={capturedPhoto || uploadedPhoto || ""} style={{ width: "100%" }} />
-                                    </Box>
-                                </Paper>
-                            </Slide>
-                        )}
-
-                        {processedImage && !showResultModal && (
-                            <Slide in direction="up">
-                                <Paper sx={{ mt: 2, p: 2 }}>
-                                    <Typography sx={{ fontWeight: 800, color: "#2A7F62" }}>✨ Your New Look</Typography>
-                                    <Box sx={{ borderRadius: 2, overflow: "hidden", border: "1px solid #ccc", mt: 1 }}>
-                                        <img src={processedImage} style={{ width: "100%" }} />
-                                    </Box>
-                                    <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                                        <Button onClick={shareImage} variant="contained" fullWidth>Share</Button>
-                                        <Button onClick={downloadImage} variant="contained" fullWidth>Download</Button>
-                                    </Stack>
-                                </Paper>
-                            </Slide>
-                        )}
-                    </Grid>
-                </Grid>
-            </Container>
-
-            {showResultModal && processedImage && (
-                <Box sx={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
-                    <Paper sx={{ width: "min(92vw, 820px)", borderRadius: 4, overflow: "hidden", maxHeight: "88vh", display: "flex", flexDirection: "column" }}>
-                        <Box sx={{ p: 1.25, display: "flex", justifyContent: "space-between" }}>
-                            <Typography sx={{ fontWeight: 900 }}>Your New Look</Typography>
-                            <IconButton onClick={() => setShowResultModal(false)}>
-                                <MdClose />
-                            </IconButton>
-                        </Box>
-                        <Divider />
-                        <Box sx={{ p: 2, overflow: "auto" }}>
-                            <img src={processedImage} style={{ width: "100%", objectFit: "contain" }} />
-                        </Box>
-                        <Divider />
-                        <Stack direction="row" spacing={1} sx={{ p: 2 }}>
-                            <Button onClick={shareImage} variant="contained" fullWidth>Share</Button>
-                            <Button onClick={downloadImage} variant="contained" fullWidth>Download</Button>
-                            <Button onClick={() => setShowResultModal(false)} variant="outlined" fullWidth>Close</Button>
-                        </Stack>
-                    </Paper>
+        <Box 
+            sx={{ 
+                minHeight: "100vh", 
+                display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center",
+                bgcolor: "background.default",
+                pt: 3,
+                pb: 4,
+                px: 2
+            }}
+        >
+            {/* Header */}
+            <Box sx={{ width: "100%", maxWidth: 600, mb: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5, mb: 2 }}>
+                    <MdCameraAlt size={28} style={{ color: "#1976d2" }} />
+                    <Typography 
+                        variant="h5" 
+                        sx={{ 
+                            fontWeight: 600, 
+                            color: "text.primary",
+                            letterSpacing: "-0.02em"
+                        }}
+                    >
+                        Virtual Try-On
+                    </Typography>
                 </Box>
-            )}
+                <Typography 
+                    variant="body1" 
+                    sx={{ 
+                        textAlign: "center", 
+                        color: "text.primary",
+                        fontWeight: 500,
+                        mb: 1.5,
+                        lineHeight: 1.6
+                    }}
+                >
+                    Try on different hairstyles in real-time. Select a style, take a photo, and see your new look.
+                </Typography>
+                <Typography 
+                    variant="body2" 
+                    sx={{ 
+                        textAlign: "center", 
+                        color: "text.secondary"
+                    }}
+                >
+                    {selectedFilter ? `Selected: ${selectedFilter.name}` : "Please select a hairstyle to begin"}
+                </Typography>
+            </Box>
+
+            {/* Camera View */}
+            <Fade in timeout={300}>
+                <Paper 
+                    elevation={3}
+                    sx={{ 
+                        width: "100%", 
+                        maxWidth: 500, 
+                        height: { xs: "65vh", sm: "65vh" },
+                        maxHeight: 600,
+                        borderRadius: 2, 
+                        overflow: "hidden", 
+                        position: "relative",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        mb: 3
+                    }}
+                >
+                    {!isCameraReady && (
+                        <Box 
+                            sx={{ 
+                                position: "absolute", 
+                                inset: 0, 
+                                display: "flex", 
+                                flexDirection: "column",
+                                justifyContent: "center", 
+                                alignItems: "center", 
+                                bgcolor: "rgba(0,0,0,0.5)", 
+                                zIndex: 3,
+                                gap: 2
+                            }}
+                        >
+                            <CircularProgress size={50} />
+                            <Typography sx={{ color: "white", fontWeight: 500 }}>
+                                Initializing camera...
+                            </Typography>
+                        </Box>
+                    )}
+                    
+                    <canvas 
+                        ref={canvasRef} 
+                        style={{ 
+                            width: "100%", 
+                            height: "100%",
+                            display: "block", 
+                            background: "#000",
+                            objectFit: "cover"
+                        }} 
+                    />
+                    <video 
+                        ref={videoRef} 
+                        style={{ display: "none" }} 
+                        playsInline 
+                        muted 
+                        autoPlay 
+                    />
+
+                    {/* Camera Flip Button */}
+                    <Box sx={{ 
+                        position: "absolute", 
+                        top: 16,
+                        right: 16,
+                        zIndex: 2
+                    }}>
+                        <IconButton 
+                            onClick={() => setCameraFacing((p) => (p === "user" ? "environment" : "user"))} 
+                            sx={{ 
+                                background: "rgba(255, 255, 255, 0.95)",
+                                "&:hover": {
+                                    background: "#fff"
+                                },
+                                width: { xs: 44, sm: 48 },
+                                height: { xs: 44, sm: 48 }
+                            }}
+                        >
+                            <MdFlipCameraIos size={22} />
+                        </IconButton>
+                    </Box>
+
+                    {/* Hairstyle Selection */}
+                    <Box sx={{ 
+                        position: "absolute", 
+                        left: 0, 
+                        right: 0, 
+                        bottom: 0, 
+                        // background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%)", 
+                        pt: { xs: 2.5, sm: 3 }, 
+                        pb: { xs: 2, sm: 2.5 }, 
+                        px: { xs: 2.5, sm: 3 },
+                    }}>
+                        <Box sx={{ 
+                            display: "flex", 
+                            gap: { xs: 2.5, sm: 3 }, 
+                            overflowX: "auto", 
+                            overflowY: "hidden",
+                            px: { xs: 1, sm: 1.5 },
+                            py: 0.5,
+                            "&::-webkit-scrollbar": {
+                                height: 6
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                                background: "rgba(255,255,255,0.3)",
+                                borderRadius: 3
+                            },
+                            "&::-webkit-scrollbar-track": {
+                                background: "rgba(255,255,255,0.1)",
+                                borderRadius: 3
+                            }
+                        }}>
+                            {images.map((img) => {
+                                const active = selectedFilter?.id === img.id;
+                                return (
+                                    <Box 
+                                        key={img.id} 
+                                        onClick={() => setSelectedFilter(img)} 
+                                        sx={{ 
+                                            cursor: "pointer", 
+                                            textAlign: "center",
+                                            flexShrink: 0,
+                                            transition: "transform 0.2s",
+                                            px: 0.5,
+                                            "&:hover": {
+                                                transform: "scale(1.05)"
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{
+                                            width: { xs: 64, sm: 72 }, 
+                                            height: { xs: 64, sm: 72 }, 
+                                            borderRadius: "50%", 
+                                            overflow: "hidden",
+                                            border: active ? "3px solid" : "2px solid",
+                                            borderColor: active ? "primary.main" : "rgba(255,255,255,0.5)",
+                                            boxShadow: active ? "0 0 16px rgba(25, 118, 210, 0.6)" : "none",
+                                            transition: "all 0.2s",
+                                            position: "relative",
+                                            mb: 1.5
+                                        }}>
+                                            <img 
+                                                src={img.blob_url} 
+                                                style={{ 
+                                                    width: "100%", 
+                                                    height: "100%", 
+                                                    objectFit: "cover" 
+                                                }} 
+                                            />
+                                            {active && (
+                                                <Box sx={{
+                                                    position: "absolute",
+                                                    inset: 0,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    bgcolor: "rgba(25, 118, 210, 0.2)"
+                                                }}>
+                                                    <CheckCircle sx={{ color: "primary.main", fontSize: { xs: 22, sm: 24 } }} />
+                                                </Box>
+                                            )}
+                                        </Box>
+                                        <Typography 
+                                            variant="caption"
+                                            sx={{ 
+                                                color: "#fff", 
+                                                maxWidth: { xs: 70, sm: 80 }, 
+                                                overflow: "hidden", 
+                                                whiteSpace: "nowrap", 
+                                                textOverflow: "ellipsis",
+                                                mt: 0.5,
+                                                fontWeight: active ? 600 : 400,
+                                                fontSize: { xs: 11, sm: 12 },
+                                                display: "block",
+                                                lineHeight: 1.4
+                                            }}
+                                        >
+                                            {img.name}
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    </Box>
+                </Paper>
+            </Fade>
+
+            {/* Action Buttons */}
+            <Box sx={{ width: "90%", maxWidth: 500 }}>
+                <Button 
+                    fullWidth 
+                    onClick={handleSend} 
+                    disabled={loading || !selectedFilter || !isCameraReady} 
+                    variant="contained"
+                    size="large"
+                    sx={{
+                        mb: 1.5,
+                        py: 1.5,
+                        fontSize: 16,
+                        fontWeight: 600,
+                        textTransform: "none",
+                        borderRadius: 2,
+                        boxShadow: 2
+                    }}
+                >
+                    Capture & Apply Hairstyle
+                </Button>
+                <Button 
+                    variant="outlined" 
+                    onClick={handleReset}
+                    fullWidth
+                    size="medium"
+                    sx={{
+                        py: 1,
+                        fontSize: 14,
+                        textTransform: "none",
+                        borderRadius: 2
+                    }}
+                >
+                    Reset
+                </Button>
+            </Box>
+
+            {/* Exciting Loading Overlay */}
+            <Backdrop
+                open={loading}
+                sx={{
+                    position: "fixed",
+                    zIndex: 9999,
+                    color: "#fff",
+                    background: "linear-gradient(135deg, rgba(25, 118, 210, 0.95) 0%, rgba(106, 13, 173, 0.95) 100%)",
+                    backdropFilter: "blur(8px)",
+                }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 3,
+                        textAlign: "center",
+                    }}
+                >
+                    {/* Animated Spinner */}
+                    <Box
+                        sx={{
+                            position: "relative",
+                            width: 120,
+                            height: 120,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        {/* Outer rotating ring */}
+                        <CircularProgress
+                            size={120}
+                            thickness={4}
+                            sx={{
+                                position: "absolute",
+                                color: "rgba(255, 255, 255, 0.3)",
+                                animation: "spin 2s linear infinite",
+                                "@keyframes spin": {
+                                    "0%": { transform: "rotate(0deg)" },
+                                    "100%": { transform: "rotate(360deg)" },
+                                },
+                            }}
+                        />
+                        {/* Inner pulsing ring */}
+                        <CircularProgress
+                            size={90}
+                            thickness={4}
+                            sx={{
+                                position: "absolute",
+                                color: "rgba(255, 255, 255, 0.6)",
+                                animation: "spin 1.5s linear infinite reverse",
+                            }}
+                        />
+                        {/* Center icon */}
+                        <Box
+                            sx={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: "50%",
+                                background: "rgba(255, 255, 255, 0.2)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                animation: "pulse 1.5s ease-in-out infinite",
+                                "@keyframes pulse": {
+                                    "0%, 100%": {
+                                        transform: "scale(1)",
+                                        opacity: 1,
+                                    },
+                                    "50%": {
+                                        transform: "scale(1.1)",
+                                        opacity: 0.8,
+                                    },
+                                },
+                            }}
+                        >
+                            <MdCameraAlt size={32} style={{ color: "#fff" }} />
+                        </Box>
+                    </Box>
+
+                    {/* Loading Text */}
+                    <Box>
+                        <Typography
+                            variant="h5"
+                            sx={{
+                                fontWeight: 700,
+                                mb: 1,
+                                animation: "fadeInOut 2s ease-in-out infinite",
+                                "@keyframes fadeInOut": {
+                                    "0%, 100%": { opacity: 0.7 },
+                                    "50%": { opacity: 1 },
+                                },
+                            }}
+                        >
+                            Creating Your New Look...
+                        </Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                opacity: 0.9,
+                                fontSize: 16,
+                            }}
+                        >
+                            Please wait while we apply the hairstyle
+                        </Typography>
+                    </Box>
+
+                    {/* Progress Dots */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            gap: 1,
+                            mt: 1,
+                        }}
+                    >
+                        {[0, 1, 2].map((index) => (
+                            <Box
+                                key={index}
+                                sx={{
+                                    width: 10,
+                                    height: 10,
+                                    borderRadius: "50%",
+                                    background: "#fff",
+                                    animation: `bounce 1.4s ease-in-out infinite ${index * 0.2}s`,
+                                    "@keyframes bounce": {
+                                        "0%, 80%, 100%": {
+                                            transform: "scale(0.8)",
+                                            opacity: 0.5,
+                                        },
+                                        "40%": {
+                                            transform: "scale(1.2)",
+                                            opacity: 1,
+                                        },
+                                    },
+                                }}
+                            />
+                        ))}
+                    </Box>
+                </Box>
+            </Backdrop>
         </Box>
     );
 };

@@ -8,6 +8,7 @@ const ORDERCREATE = Loadable(lazy(() => import('../pages/order/index')));
 const ORDERSUCESS = Loadable(lazy(() => import('../pages/order/create/paymentSucess')));
 const REDEEMSCANNER = Loadable(lazy(() => import('../pages/redeemscanner/index')));
 const VIRTUALTRYON = Loadable(lazy(() => import('../pages/virtualTryOn/index')));
+const VIRTUALTRYONPREVIEW = Loadable(lazy(() => import('../pages/virtualTryOn/Preview')));
 
 export const LoginRoutes = {
 	path: '/',
@@ -30,8 +31,12 @@ export const LoginRoutes = {
 			element: <REDEEMSCANNER />
 		},
 		{
-			path: 'virtual-try/:id',
+			path: 'try/:id',
 			element: <VIRTUALTRYON />
+		},
+		{
+			path: 'try/:id/preview',
+			element: <VIRTUALTRYONPREVIEW />
 		},
 		{
 			path: '*',

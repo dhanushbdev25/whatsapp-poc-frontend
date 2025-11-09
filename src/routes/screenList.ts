@@ -139,7 +139,8 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				isInitial: true,
 				order: 3,
 				showInSidebar: true
-			},
+			}
+			,
 			{
 				icon: PeopleIcon,
 				text: 'Whatsup sendmessage',

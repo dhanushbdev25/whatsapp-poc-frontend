@@ -6,7 +6,7 @@ import { z } from 'zod/v4';
 const envSchema = z.object({
 	// Application Configuration
 	VITE_APP_NAME: z.string().min(1, 'Application name is required'),
-	API_BASE_URL: z.string().url('API_BASE_URL must be a valid URL').endsWith('/', 'API_BASE_URL must end with /'),
+	API_BASE_URL: z.url('API_BASE_URL must be a valid URL').endsWith('/', 'API_BASE_URL must end with /'),
 	API_BASE_URL_PRE_AUTH: z
 		.string()
 		.url('API_BASE_URL_PRE_AUTH must be a valid URL')
