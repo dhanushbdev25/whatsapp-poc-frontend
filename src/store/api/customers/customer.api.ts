@@ -86,7 +86,7 @@ export const customerApi = createApi(
 				],
 			}),
 
-			deleteCustomer: builder.mutation<{ message: string }, number>({
+			deleteCustomer: builder.mutation<{ message: string }, string>({
 				query: (customerID) => ({ url: `customers/${customerID}`, method: 'DELETE' }),
 				transformResponse: (response: any) => response.data ?? response, // ✅ HERE
 				invalidatesTags: (_res, _err, id) => [

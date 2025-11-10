@@ -264,7 +264,7 @@ export default function UserManagement() {
   // ====== Actions ======
   const handleDelete = async (row: UserRow) => {
     try {
-      await deleteCustomer(row.customerID).unwrap();
+      await deleteCustomer(row.id).unwrap();
       setSnack({ open: true, msg: "User deleted", type: "info" });
     } catch {
       setSnack({ open: true, msg: "Failed to delete user", type: "error" });
