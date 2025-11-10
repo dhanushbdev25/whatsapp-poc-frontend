@@ -492,7 +492,7 @@ export default function SendWhatsAppMessage() {
                                     }}
                                     helperText={
                                         <Typography sx={{ fontSize: 10, color: "#6B7280", mt: 0.5 }}>
-                                            Enter phone number without country code (e.g., 8667608680)
+                                            Enter phone number without country code (e.g., 8034567890.)
                                         </Typography>
                                     }
                                 />

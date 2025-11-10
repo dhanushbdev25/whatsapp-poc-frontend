@@ -86,6 +86,7 @@ const PaymentForm = ({
 	const [inputPoints, setInputPoints] = useState<string>('');
 	const [appliedPoints, setAppliedPoints] = useState<number>(0);
 	const [applyErr, setApplyErr] = useState<string | null>(null);
+	const [cardComplete, setCardComplete] = useState(false);
 
 	const { totalToPay, currencyCode, totalBeforeDiscount } = totals;
 
@@ -230,6 +231,8 @@ const PaymentForm = ({
 			setError(err?.response?.data?.message || 'Server error. Please try again.');
 		}
 	};
+	const isLoyaltyValid = !usePoints || appliedPoints > 0;
+
 
 	return (
 		<Stack spacing={2}>
@@ -272,9 +275,25 @@ const PaymentForm = ({
 									size="small"
 									value={inputPoints}
 									onChange={e => {
-										const v = e.target.value;
-										// keep only digits, no negatives
-										if (/^\d*$/.test(v)) setInputPoints(v);
+										let v = e.target.value;
+
+										// allow empty
+										if (v === "") {
+											setInputPoints("");
+											return;
+										}
+
+										// only digits
+										if (!/^\d+$/.test(v)) return;
+
+										// prevent leading zero unless the number is exactly "0"
+										if (v.length > 1 && v.startsWith("0")) {
+											v = v.replace(/^0+/, ""); // remove leading zeros
+											if (v === "") v = "0"; // fallback if all zeros
+										}
+
+										setInputPoints(v);
+
 									}}
 									fullWidth
 								/>
@@ -286,6 +305,7 @@ const PaymentForm = ({
 										const maxByPayable = Math.floor(totalBeforeDiscount);
 										const allowedMax = Math.max(0, Math.min(maxByBalance, maxByPayable));
 										setInputPoints(String(allowedMax));
+
 									}}
 								>
 									Max
@@ -316,7 +336,14 @@ const PaymentForm = ({
 			/>
 
 			<Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-				<CardElement options={CARD_OPTIONS} />
+				<CardElement onChange={(e) => {
+					setCardComplete(e.complete);
+					if (e.error) {
+						setError(e.error.message);
+					} else {
+						setError(null);
+					}
+				}} options={CARD_OPTIONS} />
 			</Paper>
 
 			<Stack spacing={0.5}>
@@ -337,7 +364,7 @@ const PaymentForm = ({
 				fullWidth
 				variant="contained"
 				onClick={handlePay}
-				disabled={status !== 'idle'}
+				disabled={status !== 'idle' || !cardComplete || !isLoyaltyValid }
 				sx={{ height: 44, fontWeight: 600 }}
 			>
 				{status !== 'idle' ? <CircularProgress size={20} /> : `Pay ${currency(totalToPay, currencyCode)}`}
@@ -355,6 +382,7 @@ const CreateOrder = ({ apiBaseUrl = `${process.env.API_BASE_URL}` }) => {
 	const [order, setOrder] = useState<OrderResponse | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [publishableKey, setPublishableKey] = useState<string | null>(null);
+
 
 	// Track loyalty (local UI copy we can mutate after apply)
 	const [loyalty, setLoyalty] = useState<LoyaltyState>({
