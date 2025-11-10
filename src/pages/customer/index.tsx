@@ -145,7 +145,7 @@ export default function UserManagement() {
         const status: StatusType = c.isActive ? "Active" : "Inactive";
         return {
           customerID: c.customerID,
-          id: String(c.customerID),
+          id: String(c.id),
           name: c.name,
           email: c.email,
           phone: c.phone ?? "-",
@@ -300,11 +300,12 @@ export default function UserManagement() {
         }
         | undefined,
     };
+console.log(editModel.id,'editModel.id',editModel);
 
     try {
       // Call API to persist editable backend fields (excluding local-only status)
       await updateCustomer({
-        customerID: editModel.customerID,
+        customerID: editModel.id,
         data: body,
       }).unwrap();
 
@@ -352,7 +353,15 @@ export default function UserManagement() {
         <Button
           variant="outlined"
           startIcon={<CloudUploadOutlinedIcon />}
-          sx={{ borderRadius: 2 }}
+          sx={{
+            borderRadius: 1.5,
+            fontSize: 12,
+            padding: "1px 6px",
+            minHeight: 20,
+            lineHeight: 1,
+            height: 40,
+            fontWeight: "600",
+          }}
           onClick={() => navigate("/customer/bulk/create")}
         >
           Bulk Upload
@@ -360,7 +369,15 @@ export default function UserManagement() {
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon />}
-          sx={{ borderRadius: 2, fontWeight: 600 }}
+          sx={{
+            borderRadius: 1.5,
+           fontWeight: "600",
+            fontSize: 12,
+            padding: "1px 6px",
+            minHeight: 20,
+            lineHeight: 1,
+            height: 40
+          }}
           onClick={() => navigate("/customer/create")}
         >
           Add New User
@@ -373,8 +390,9 @@ export default function UserManagement() {
     <Paper sx={{ mt: 3, p: 2, borderRadius: 3 }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
         <TextField
+         size="small"
           fullWidth
-          placeholder="Search by name, email, phone, or customer ID..."
+          placeholder="Search by customer ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{
@@ -388,6 +406,7 @@ export default function UserManagement() {
 
         <FormControl fullWidth>
           <Select
+           size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -400,6 +419,7 @@ export default function UserManagement() {
 
         <FormControl fullWidth>
           <Select
+           size="small"
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
           >

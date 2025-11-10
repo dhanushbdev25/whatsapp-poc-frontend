@@ -72,10 +72,10 @@ export const customerApi = createApi(
 
 			updateCustomer: builder.mutation<
 				Customer,
-				{ customerID: number; data: UpdateCustomerBody }
+				{ customerID: any; data: UpdateCustomerBody }
 			>({
 				query: ({ customerID, data }) => ({
-					url: `customers/update/${customerID}`,
+					url: `customers/${customerID}`,
 					method: 'PATCH',
 					body: data,
 				}),

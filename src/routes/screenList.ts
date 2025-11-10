@@ -11,6 +11,12 @@ export const imports = {
 	ORDERSUCESS: lazy(() => import('../pages/order/create/paymentSucess')),
 	REDEEMSCANNER: lazy(() => import('../pages/redeemscanner/index')),
 	REDEEMS: lazy(() => import('../pages/redeemscanner/RedeemLoyaltyPoints')),
+	VIRTUALTRYON: lazy(() => import('../pages/virtualTryOn/index')),
+	CUSTOMERWHATSUPSENDMESSAGE: lazy(() => import('../pages/WhatsAppMessage/SendMessage/index')),
+	CUSTOMERWHATSUPVIEWMESSAGETEMPLATE: lazy(() => import('../pages/WhatsAppMessage/ViewMessage/index')),
+
+
+
 };
 
 /**
@@ -117,7 +123,7 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				permission: 'ORDERCREATE',
 				isInitial: true,
 				order: 3,
-				showInSidebar: true
+				showInSidebar: false
 			},
 			{
 				icon: PeopleIcon,
@@ -138,15 +144,15 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				permission: 'REDEEMS',
 				isInitial: true,
 				order: 3,
-				showInSidebar: true
+				showInSidebar: false
 			}
 			,
 			{
 				icon: PeopleIcon,
-				text: 'Whatsup sendmessage',
+				text: 'Send Message',
 				path: '/send/message',
-				element: imports.REDEEMS,
-				permission: 'VIRTUALTRYON',
+				element: imports.CUSTOMERWHATSUPSENDMESSAGE,
+				permission: 'CUSTOMERWHATSUPSENDMESSAGE',
 				isInitial: true,
 				order: 3,
 				showInSidebar: true
@@ -154,9 +160,9 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 			,
 			{
 				icon: PeopleIcon,
-				text: 'Whatsup view message template',
+				text: 'View Message Template',
 				path: '/view/message/template',
-				element: imports.REDEEMS,
+				element: imports.CUSTOMERWHATSUPVIEWMESSAGETEMPLATE,
 				permission: 'VIRTUALTRYON',
 				isInitial: true,
 				order: 3,
