@@ -29,7 +29,8 @@ interface ReferenceImage {
     blob_url: string;
 }
 
-const API_BASE_T = "http://20.212.169.167:8000/api/v1";
+
+const API_BASE_T = "https://waappapipoc.azurewebsites.net/api/v1";
 
 const VirtualHairstylesTryOn: React.FC = () => {
     const navigate = useNavigate();
