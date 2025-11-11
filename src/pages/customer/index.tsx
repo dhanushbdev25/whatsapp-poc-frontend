@@ -300,7 +300,6 @@ export default function UserManagement() {
         }
         | undefined,
     };
-console.log(editModel.id,'editModel.id',editModel);
 
     try {
       // Call API to persist editable backend fields (excluding local-only status)
@@ -371,7 +370,7 @@ console.log(editModel.id,'editModel.id',editModel);
           startIcon={<AddRoundedIcon />}
           sx={{
             borderRadius: 1.5,
-           fontWeight: "600",
+            fontWeight: "600",
             fontSize: 12,
             padding: "1px 6px",
             minHeight: 20,
@@ -390,7 +389,7 @@ console.log(editModel.id,'editModel.id',editModel);
     <Paper sx={{ mt: 3, p: 2, borderRadius: 3 }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
         <TextField
-         size="small"
+          size="small"
           fullWidth
           placeholder="Search by customer ID..."
           value={search}
@@ -406,7 +405,7 @@ console.log(editModel.id,'editModel.id',editModel);
 
         <FormControl fullWidth>
           <Select
-           size="small"
+            size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -419,7 +418,7 @@ console.log(editModel.id,'editModel.id',editModel);
 
         <FormControl fullWidth>
           <Select
-           size="small"
+            size="small"
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
           >
@@ -577,124 +576,179 @@ console.log(editModel.id,'editModel.id',editModel);
   );
 
   const DetailsView = selected && (
-    <Container maxWidth="md" sx={{ pt: 2, pb: 6 }}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <IconButton
-          onClick={() => {
-            setView("list");
-            setSelected(null);
-          }}
-          sx={{ mr: 0.5 }}
-        >
-          <ArrowBackRoundedIcon />
-        </IconButton>
-        <Breadcrumbs sx={{ color: "#6B7280", fontSize: 14 }}>
-          <Link underline="hover" color="inherit" onClick={() => setView("list")}>
-            Customer Management
-          </Link>
-          <Typography>View User</Typography>
-        </Breadcrumbs>
-      </Stack>
+		<Box sx={{ background: '#F7F8FA', minHeight: '100vh', py: 4 }}>
+			<Container maxWidth="md">
+				{/* Back Nav */}
+				<Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
+					<IconButton
+						onClick={() => {
+							setView('list');
+							setSelected(null);
+						}}
+					>
+						<ArrowBackRoundedIcon />
+					</IconButton>
 
-      <Typography sx={{ fontSize: 24, fontWeight: 800, mb: 2 }}>
-        {selected.name}
-      </Typography>
+					<Breadcrumbs sx={{ color: 'text.secondary', fontSize: 14 }}>
+						<Link underline="hover" color="inherit" onClick={() => setView('list')}>
+							Customer Management
+						</Link>
+						<Typography>Customer Profile</Typography>
+					</Breadcrumbs>
+				</Stack>
 
-      <Paper sx={{ p: 2.5, borderRadius: 2, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Customer ID
-            </Typography>
-            <Typography fontWeight={700}>{selected.id}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Status
-            </Typography>
-            <StatusChip status={selected.status} />
-          </Grid>
+				{/* Header */}
+				<Paper
+					sx={{
+						p: 3,
+						borderRadius: 3,
+						border: '1px solid #DFE3E8',
+						background: 'white',
+						mb: 3
+					}}
+				>
+					<Stack spacing={1}>
+						<Typography sx={{ fontSize: 26, fontWeight: 800 }}>{selected.name}</Typography>
+						<Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+							<StatusChip status={selected.status} />
+						</Stack>
+					</Stack>
+				</Paper>
 
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Email
-            </Typography>
-            <Typography>{selected.email}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Phone
-            </Typography>
-            <Typography>{selected.phone}</Typography>
-          </Grid>
+				{/* Contact Info */}
+				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Contact Information</Typography>
 
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Enrollment Date
-            </Typography>
-            <Typography>{selected.enrollmentDate}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Last Active
-            </Typography>
-            <Typography>{selected.lastActive}</Typography>
-          </Grid>
+					<Stack spacing={2}>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Customer ID
+							</Typography>
+							<Typography fontWeight={600}>{selected.customerID}</Typography>
+						</Box>
 
-          <Grid>
-            <Divider sx={{ my: 1 }} />
-          </Grid>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Email
+							</Typography>
+							<Typography>{selected.email || '-'}</Typography>
+						</Box>
 
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Gender
-            </Typography>
-            <Typography>{selected.gender || "-"}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Preferred Method
-            </Typography>
-            <Typography>{selected.method || "-"}</Typography>
-          </Grid>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Phone
+							</Typography>
+							<Typography>{selected.phone || '-'}</Typography>
+						</Box>
 
-          <Grid>
-            <Typography variant="body2" color="text.secondary">
-              Address
-            </Typography>
-            <Typography>
-              {selected.address?.street || "-"}
-              {selected.address?.city ? `, ${selected.address.city}` : ""}
-              {selected.address?.state ? `, ${selected.address.state}` : ""}
-              {selected.address?.postalCode ? `, ${selected.address.postalCode}` : ""}
-              {selected.address?.country ? `, ${selected.address.country}` : ""}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Paper>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Gender
+							</Typography>
+							<Typography>{selected.gender || '-'}</Typography>
+						</Box>
+					</Stack>
+				</Paper>
 
-      <Stack direction="row" spacing={1.5}>
-        <Button
-          variant="contained"
-          onClick={() => openEdit(selected)}
-          sx={{ borderRadius: 2, fontWeight: 600 }}
-        >
-          Edit User
-        </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={() => {
-            handleDelete(selected);
-            setView("list");
-            setSelected(null);
-          }}
-        >
-          Delete
-        </Button>
-      </Stack>
-    </Container>
-  );
+				{/* Address */}
+				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Address Details</Typography>
+
+					<Stack spacing={2}>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Street
+							</Typography>
+							<Typography>{selected.address?.street || '-'}</Typography>
+						</Box>
+
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								State
+							</Typography>
+							<Typography>{selected.address?.state || '-'}</Typography>
+						</Box>
+
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Postal Code
+							</Typography>
+							<Typography>{selected.address?.postalCode || '-'}</Typography>
+						</Box>
+					</Stack>
+				</Paper>
+
+				{/* Activity */}
+				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Account Activity</Typography>
+
+					<Stack spacing={2}>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Enrollment Date
+							</Typography>
+							<Typography>{selected.enrollmentDate}</Typography>
+						</Box>
+
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Last Active
+							</Typography>
+							<Typography>{selected.lastActive || '-'}</Typography>
+						</Box>
+
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Status Active
+							</Typography>
+							<Typography>{selected._isActiveLocal ? 'Yes' : 'No'}</Typography>
+						</Box>
+					</Stack>
+				</Paper>
+
+				{/* Notification */}
+				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Notification Preferences</Typography>
+
+					<Stack spacing={1.5}>
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								WhatsApp Alerts
+							</Typography>
+							<Typography>{selected.notifications?.whatsapp ? 'Enabled' : 'Disabled'}</Typography>
+						</Box>
+
+						<Box>
+							<Typography variant="body2" color="text.secondary">
+								Email Updates
+							</Typography>
+							<Typography>{selected.notifications?.emailUpdates ? 'Enabled' : 'Disabled'}</Typography>
+						</Box>
+					</Stack>
+				</Paper>
+
+				{/* Buttons */}
+				<Stack direction="row" spacing={1.5} sx={{ mt: 4 }}>
+					<Button variant="contained" onClick={() => openEdit(selected)} sx={{ borderRadius: 2 }}>
+						Edit User
+					</Button>
+					<Button
+						variant="outlined"
+						color="error"
+						onClick={() => {
+							handleDelete(selected);
+							setView('list');
+							setSelected(null);
+						}}
+						sx={{ borderRadius: 2 }}
+					>
+						Delete
+					</Button>
+				</Stack>
+			</Container>
+		</Box>
+	);
+
 
   // ====== Render ======
   if (isLoading) return <Typography sx={{ p: 4 }}>Loading…</Typography>;

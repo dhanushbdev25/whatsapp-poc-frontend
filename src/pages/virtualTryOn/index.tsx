@@ -9,11 +9,11 @@ import {
     Fade,
     Backdrop,
 } from "@mui/material";
-import { 
+import {
     CheckCircle
 } from "@mui/icons-material";
-import { 
-    MdFlipCameraIos, 
+import {
+    MdFlipCameraIos,
     MdCameraAlt
 } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +30,7 @@ interface ReferenceImage {
 }
 
 
-const API_BASE_T = "https://waappapipoc.azurewebsites.net/api/v1";
+const API_BASE_T = "https://vtryon.share.zrok.io/api/v1";
 
 const VirtualHairstylesTryOn: React.FC = () => {
     const navigate = useNavigate();
@@ -59,6 +59,10 @@ const VirtualHairstylesTryOn: React.FC = () => {
             try {
                 const res = await axios.get(`${API_BASE_T}/reference_images`, {
                     params: { category: "hairstyles" },
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "skip_zrok_interstitial": "image"
+                    },
                 });
                 if (res.data?.data?.results) {
                     setImages(res.data.data.results);
@@ -206,7 +210,7 @@ const VirtualHairstylesTryOn: React.FC = () => {
             }
 
             const res = await axios.post(`${API_BASE_T}/virtual_try_on`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+                headers: { "Content-Type": "multipart/form-data", "skip_zrok_interstitial": "image" },
             });
 
             const processedImage = res.data?.data?.blob_url || null;
@@ -236,11 +240,11 @@ const VirtualHairstylesTryOn: React.FC = () => {
     };
 
     return (
-        <Box 
-            sx={{ 
-                minHeight: "100vh", 
-                display: "flex", 
-                flexDirection: "column", 
+        <Box
+            sx={{
+                minHeight: "100vh",
+                display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
                 bgcolor: "background.default",
                 pt: 3,
@@ -252,10 +256,10 @@ const VirtualHairstylesTryOn: React.FC = () => {
             <Box sx={{ width: "100%", maxWidth: 600, mb: 3 }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5, mb: 2 }}>
                     <MdCameraAlt size={28} style={{ color: "#1976d2" }} />
-                    <Typography 
-                        variant="h5" 
-                        sx={{ 
-                            fontWeight: 600, 
+                    <Typography
+                        variant="h5"
+                        sx={{
+                            fontWeight: 600,
                             color: "text.primary",
                             letterSpacing: "-0.02em"
                         }}
@@ -263,10 +267,10 @@ const VirtualHairstylesTryOn: React.FC = () => {
                         Virtual Try-On
                     </Typography>
                 </Box>
-                <Typography 
-                    variant="body1" 
-                    sx={{ 
-                        textAlign: "center", 
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "center",
                         color: "text.primary",
                         fontWeight: 500,
                         mb: 1.5,
@@ -275,10 +279,10 @@ const VirtualHairstylesTryOn: React.FC = () => {
                 >
                     Try on different hairstyles in real-time. Select a style, take a photo, and see your new look.
                 </Typography>
-                <Typography 
-                    variant="body2" 
-                    sx={{ 
-                        textAlign: "center", 
+                <Typography
+                    variant="body2"
+                    sx={{
+                        textAlign: "center",
                         color: "text.secondary"
                     }}
                 >
@@ -288,15 +292,15 @@ const VirtualHairstylesTryOn: React.FC = () => {
 
             {/* Camera View */}
             <Fade in timeout={300}>
-                <Paper 
+                <Paper
                     elevation={3}
-                    sx={{ 
-                        width: "100%", 
-                        maxWidth: 500, 
+                    sx={{
+                        width: "100%",
+                        maxWidth: 500,
                         height: { xs: "65vh", sm: "65vh" },
                         maxHeight: 600,
-                        borderRadius: 2, 
-                        overflow: "hidden", 
+                        borderRadius: 2,
+                        overflow: "hidden",
                         position: "relative",
                         border: "1px solid",
                         borderColor: "divider",
@@ -304,15 +308,15 @@ const VirtualHairstylesTryOn: React.FC = () => {
                     }}
                 >
                     {!isCameraReady && (
-                        <Box 
-                            sx={{ 
-                                position: "absolute", 
-                                inset: 0, 
-                                display: "flex", 
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                inset: 0,
+                                display: "flex",
                                 flexDirection: "column",
-                                justifyContent: "center", 
-                                alignItems: "center", 
-                                bgcolor: "rgba(0,0,0,0.5)", 
+                                justifyContent: "center",
+                                alignItems: "center",
+                                bgcolor: "rgba(0,0,0,0.5)",
                                 zIndex: 3,
                                 gap: 2
                             }}
@@ -323,35 +327,35 @@ const VirtualHairstylesTryOn: React.FC = () => {
                             </Typography>
                         </Box>
                     )}
-                    
-                    <canvas 
-                        ref={canvasRef} 
-                        style={{ 
-                            width: "100%", 
+
+                    <canvas
+                        ref={canvasRef}
+                        style={{
+                            width: "100%",
                             height: "100%",
-                            display: "block", 
+                            display: "block",
                             background: "#000",
                             objectFit: "cover"
-                        }} 
+                        }}
                     />
-                    <video 
-                        ref={videoRef} 
-                        style={{ display: "none" }} 
-                        playsInline 
-                        muted 
-                        autoPlay 
+                    <video
+                        ref={videoRef}
+                        style={{ display: "none" }}
+                        playsInline
+                        muted
+                        autoPlay
                     />
 
                     {/* Camera Flip Button */}
-                    <Box sx={{ 
-                        position: "absolute", 
+                    <Box sx={{
+                        position: "absolute",
                         top: 16,
                         right: 16,
                         zIndex: 2
                     }}>
-                        <IconButton 
-                            onClick={() => setCameraFacing((p) => (p === "user" ? "environment" : "user"))} 
-                            sx={{ 
+                        <IconButton
+                            onClick={() => setCameraFacing((p) => (p === "user" ? "environment" : "user"))}
+                            sx={{
                                 background: "rgba(255, 255, 255, 0.95)",
                                 "&:hover": {
                                     background: "#fff"
@@ -365,20 +369,20 @@ const VirtualHairstylesTryOn: React.FC = () => {
                     </Box>
 
                     {/* Hairstyle Selection */}
-                    <Box sx={{ 
-                        position: "absolute", 
-                        left: 0, 
-                        right: 0, 
-                        bottom: 0, 
+                    <Box sx={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
                         // background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%)", 
-                        pt: { xs: 2.5, sm: 3 }, 
-                        pb: { xs: 2, sm: 2.5 }, 
+                        pt: { xs: 2.5, sm: 3 },
+                        pb: { xs: 2, sm: 2.5 },
                         px: { xs: 2.5, sm: 3 },
                     }}>
-                        <Box sx={{ 
-                            display: "flex", 
-                            gap: { xs: 2.5, sm: 3 }, 
-                            overflowX: "auto", 
+                        <Box sx={{
+                            display: "flex",
+                            gap: { xs: 2.5, sm: 3 },
+                            overflowX: "auto",
                             overflowY: "hidden",
                             px: { xs: 1, sm: 1.5 },
                             py: 0.5,
@@ -397,11 +401,11 @@ const VirtualHairstylesTryOn: React.FC = () => {
                             {images.map((img) => {
                                 const active = selectedFilter?.id === img.id;
                                 return (
-                                    <Box 
-                                        key={img.id} 
-                                        onClick={() => setSelectedFilter(img)} 
-                                        sx={{ 
-                                            cursor: "pointer", 
+                                    <Box
+                                        key={img.id}
+                                        onClick={() => setSelectedFilter(img)}
+                                        sx={{
+                                            cursor: "pointer",
                                             textAlign: "center",
                                             flexShrink: 0,
                                             transition: "transform 0.2s",
@@ -412,9 +416,9 @@ const VirtualHairstylesTryOn: React.FC = () => {
                                         }}
                                     >
                                         <Box sx={{
-                                            width: { xs: 64, sm: 72 }, 
-                                            height: { xs: 64, sm: 72 }, 
-                                            borderRadius: "50%", 
+                                            width: { xs: 64, sm: 72 },
+                                            height: { xs: 64, sm: 72 },
+                                            borderRadius: "50%",
                                             overflow: "hidden",
                                             border: active ? "3px solid" : "2px solid",
                                             borderColor: active ? "primary.main" : "rgba(255,255,255,0.5)",
@@ -423,13 +427,13 @@ const VirtualHairstylesTryOn: React.FC = () => {
                                             position: "relative",
                                             mb: 1.5
                                         }}>
-                                            <img 
-                                                src={img.blob_url} 
-                                                style={{ 
-                                                    width: "100%", 
-                                                    height: "100%", 
-                                                    objectFit: "cover" 
-                                                }} 
+                                            <img
+                                                src={img.blob_url}
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "cover"
+                                                }}
                                             />
                                             {active && (
                                                 <Box sx={{
@@ -444,13 +448,13 @@ const VirtualHairstylesTryOn: React.FC = () => {
                                                 </Box>
                                             )}
                                         </Box>
-                                        <Typography 
+                                        <Typography
                                             variant="caption"
-                                            sx={{ 
-                                                color: "#fff", 
-                                                maxWidth: { xs: 70, sm: 80 }, 
-                                                overflow: "hidden", 
-                                                whiteSpace: "nowrap", 
+                                            sx={{
+                                                color: "#fff",
+                                                maxWidth: { xs: 70, sm: 80 },
+                                                overflow: "hidden",
+                                                whiteSpace: "nowrap",
                                                 textOverflow: "ellipsis",
                                                 mt: 0.5,
                                                 fontWeight: active ? 600 : 400,
@@ -471,10 +475,10 @@ const VirtualHairstylesTryOn: React.FC = () => {
 
             {/* Action Buttons */}
             <Box sx={{ width: "90%", maxWidth: 500 }}>
-                <Button 
-                    fullWidth 
-                    onClick={handleSend} 
-                    disabled={loading || !selectedFilter || !isCameraReady} 
+                <Button
+                    fullWidth
+                    onClick={handleSend}
+                    disabled={loading || !selectedFilter || !isCameraReady}
                     variant="contained"
                     size="large"
                     sx={{
@@ -489,8 +493,8 @@ const VirtualHairstylesTryOn: React.FC = () => {
                 >
                     Capture & Apply Hairstyle
                 </Button>
-                <Button 
-                    variant="outlined" 
+                <Button
+                    variant="outlined"
                     onClick={handleReset}
                     fullWidth
                     size="medium"

@@ -139,7 +139,6 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				icon: PeopleIcon,
 				text: 'Redeem Loyalty Points',
 				path: '/user/:id/add-points/scan',
-				// path: 'redeem/clam',
 				element: imports.REDEEMS,
 				permission: 'REDEEMS',
 				isInitial: true,
