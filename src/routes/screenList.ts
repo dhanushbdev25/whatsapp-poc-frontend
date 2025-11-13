@@ -1,6 +1,7 @@
 import { lazy, type ComponentType } from 'react';
 
 import PeopleIcon from '@mui/icons-material/People';
+import { flattenError } from 'zod/v4';
 // Lazy-loaded components
 export const imports = {
 	CUSTOMER: lazy(() => import('../pages/customer/index')),
@@ -14,9 +15,13 @@ export const imports = {
 	VIRTUALTRYON: lazy(() => import('../pages/virtualTryOn/index')),
 	CUSTOMERWHATSUPSENDMESSAGE: lazy(() => import('../pages/WhatsAppMessage/SendMessage/index')),
 	CUSTOMERWHATSUPVIEWMESSAGETEMPLATE: lazy(() => import('../pages/WhatsAppMessage/ViewMessage/index')),
-
-
-
+	PRODUCTS: lazy(() => import('../pages/products/ProductPage')),
+	ORDER: lazy(() => import('../pages/order/components/OrdersGrid')),
+	ORDERBYID: lazy(() => import('../pages/order/components/OrderDetailsView')),
+	PRODUCT: lazy(() => import('../pages/products/components/ProductTable')),
+	CREATEPRODUCT: lazy(() => import('../pages/products/components/ProductCreate')),
+	EDITPRODUCT: lazy(() => import('../pages/products/components/ProductEdit')),
+	VIEWPRODUCT: lazy(() => import('../pages/products/components/ProductView')),
 };
 
 /**
@@ -77,7 +82,7 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 			{
 				icon: PeopleIcon,
 				text: 'Customer Home',
-				path: 'customer/view',
+				path: 'customer/view/:id',
 				element: imports.CUSTOMERVIEW,
 				permission: 'CUSTOMERVIEW',
 				isInitial: true,
@@ -154,7 +159,7 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				permission: 'CUSTOMERWHATSUPSENDMESSAGE',
 				isInitial: true,
 				order: 3,
-				showInSidebar: true
+				showInSidebar: false
 			}
 			,
 			{
@@ -166,6 +171,68 @@ export const mainModuleConfigs: MainModuleConfig[] = [
 				isInitial: true,
 				order: 3,
 				showInSidebar: true
+			},
+			{
+				icon: PeopleIcon,
+				text: 'Products',
+				path: '/products',
+				element: imports.PRODUCTS,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: true
+			},
+			{
+				icon: PeopleIcon,
+				text: 'Order',
+				path: '/order',
+				element: imports.ORDER,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: true
+			},
+			{
+				icon: PeopleIcon,
+				text: 'Order View',
+				path: '/order/view/:id',
+				element: imports.ORDERBYID,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: false
+			},
+
+			{
+				icon: PeopleIcon,
+				text: 'Order View',
+				path: '/products/view/:id',
+				element: imports.VIEWPRODUCT,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: false
+			}
+			,
+			{
+				icon: PeopleIcon,
+				text: 'Order View',
+				path: '/products/edit/:id',
+				element: imports.EDITPRODUCT,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: false
+			},
+			{
+				icon: PeopleIcon,
+				text: 'Order View',
+				path: '/products/create',
+				element: imports.CREATEPRODUCT,
+				permission: 'PRODUCTS',
+				isInitial: true,
+				order: 3,
+				showInSidebar: false
 			}
 		]
 	}

@@ -130,13 +130,15 @@ export default function BulkUploadUsers({ onBack, userId }: Props) {
   };
 
   return (
-    <Box sx={{   height: "100%",
-          overflowY: "auto",
-          overflowX: "hidden",
-          bgcolor: "#FAFAFB",
-          py: 2,}}>
+    <Box sx={{
+      height: "100%",
+      overflowY: "auto",
+      overflowX: "hidden",
+      bgcolor: "#FAFAFB",
+      py: 2,
+    }}>
       <Container maxWidth="md">
- 
+
 
         <Typography sx={{ fontSize: 32, fontWeight: 700, mb: 1 }}>
           Bulk Upload Users

@@ -1,0 +1,66 @@
+{
+  "success": true,
+  "timestamp": "2025-11-11T12:27:04.486Z",
+  "data": {
+    "id": "6db69b5d-754f-4a66-8a51-5361ed01c914",
+    "customerID": 917689567348,
+    "name": "Vignesh",
+    "email": "vignesh@dundermifflin.com",
+    "phone": "8667608680",
+    "address": "Beetroot Farm, Scranton",
+    "state": "Navada",
+    "pincode": "123098",
+    "gender": "male",
+    "createdBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+    "updatedBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+    "latestActive": "2025-11-09T08:26:35.704Z",
+    "createdAt": "2025-11-09T08:26:34.946Z",
+    "updatedAt": "2025-11-09T08:26:34.946Z",
+    "isActive": true,
+    "notificationPreferences": {
+      "id": "943517d7-5a4b-44c0-99c5-398b064bb645",
+      "customerID": "6db69b5d-754f-4a66-8a51-5361ed01c914",
+      "orderUpdates": true,
+      "loyaltyRewards": true,
+      "promotionalMessages": true,
+      "createdBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+      "updatedBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+      "createdAt": "2025-11-09T08:26:35.158Z",
+      "updatedAt": "2025-11-09T08:26:35.158Z"
+    },
+    "loyaltyAccounts": {
+      "id": "7b85d351-036b-4b4e-abfd-ae5ce891b456",
+      "customerID": "6db69b5d-754f-4a66-8a51-5361ed01c914",
+      "points_balance": 942,
+      "points_redeemed": 3458,
+      "lifetime_points": 5400,
+      "last_transaction_at": "2025-11-10T09:34:29.998Z",
+      "createdBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+      "updatedBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+      "createdAt": "2025-11-09T08:26:35.040Z",
+      "updatedAt": "2025-11-10T09:34:29.998Z"
+    },
+    "orders": [
+      {
+        "id": "20aa4b47-ed29-4f52-999f-c7323c386530",
+        "customerID": "6db69b5d-754f-4a66-8a51-5361ed01c914",
+        "orderNo": "OR123123213",
+        "orderName": "Shapoo",
+        "orderCreatedAt": "2025-11-09T08:26:34.946Z",
+        "status": "inprogress",
+        "trackingNo": "TN3454351",
+        "paymentType": "Credit",
+        "shipToAddress": "North pole plot 23423 2nd street",
+        "shipToAddressCoord": { "lat": 8.7228416, "lng": 77.7322496 },
+        "carrier": "FedEx",
+        "metadata": null,
+        "createdBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+        "updatedBy": "264553f1-3ca9-4cc1-bb87-c0972b691e19",
+        "createdAt": "2025-11-09T08:26:34.946Z",
+        "updatedAt": "2025-11-09T08:26:34.946Z"
+      }
+    ],
+    "customerGroupMembers": []
+  },
+  "message": "Customer fetched successfully"
+}

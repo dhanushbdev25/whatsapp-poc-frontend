@@ -4,11 +4,16 @@ import { LOGOUT, AuthActionTypes } from './actions';
 import { sessionApi } from '../api/auth/session.api';
 import TokenStorage from '../../utils/TokenStorage';
 import { customerApi } from '../api/customers/customer.api';
+import { ordersApi } from '../api/orders/orders.api';
+import { productApi } from '../api/products/products.api';
 
 const rootReducer = combineReducers({
 	[authApi.reducerPath]: authApi.reducer,
 	[sessionApi.reducerPath]: sessionApi.reducer,
-	[customerApi.reducerPath]: customerApi.reducer
+	[customerApi.reducerPath]: customerApi.reducer,
+	[ordersApi.reducerPath]: ordersApi.reducer,
+	[productApi.reducerPath]: productApi.reducer,
+
 
 });
 

@@ -13,6 +13,8 @@ import { ERROR_MESSAGES, HTTP_STATUS } from '../constants';
 import type { ErrorResponse } from '../types/api.types';
 import { isDevelopment } from '../config/env';
 import { customerApi } from './api/customers/customer.api';
+import { ordersApi } from './api/orders/orders.api';
+import { productApi } from './api/products/products.api';
 
 // ==============================|| REDUX TOOLKIT - MAIN STORE ||============================== //
 
@@ -75,7 +77,7 @@ export const store = configureStore({
 	middleware: getDefaultMiddleware =>
 		getDefaultMiddleware({
 			serializableCheck: false
-		}).concat([authApi.middleware, sessionApi.middleware,customerApi.middleware, rtkQueryErrorLogger] as Middleware[])
+		}).concat([authApi.middleware, sessionApi.middleware,customerApi.middleware,ordersApi.middleware,productApi.middleware, rtkQueryErrorLogger] as Middleware[])
 });
 
 export type RootState = ReturnType<typeof store.getState>;

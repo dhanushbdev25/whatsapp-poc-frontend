@@ -50,6 +50,7 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 // ✅ SINGLE source of hooks — ensure this path matches your store registration
 import {
@@ -137,6 +138,7 @@ export default function UserManagement() {
   } = useGetAllCustomersQuery(undefined, { refetchOnMountOrArgChange: true });
   const [updateCustomer, { isLoading: isSaving }] = useUpdateCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();
+  const [getId, setId] = useState<any>(null);
 
   // 🔁 Map API → view rows (no mutation of apiCustomers; keep a derived array)
   const users = React.useMemo<UserRow[]>(
@@ -182,8 +184,8 @@ export default function UserManagement() {
   );
 
   // ====== Local UI state (filters, pagination, selection, menus, feedback) ======
-  const [view, setView] = React.useState<ViewMode>("list");
-  const [selected, setSelected] = React.useState<UserRow | null>(null);
+  const [view, setView] = useState<ViewMode>("list");
+  const [selected, setSelected] = useState<UserRow | null>(null);
 
   const methodOptions = React.useMemo(() => {
     const vals = new Set<string>();
@@ -191,23 +193,23 @@ export default function UserManagement() {
     return Array.from(vals);
   }, [users]);
 
-  const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
     "All Status" | StatusType
   >("All Status");
-  const [methodFilter, setMethodFilter] = React.useState("All Methods");
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [checked, setChecked] = React.useState<Record<string, boolean>>({});
-  const [snack, setSnack] = React.useState<{
+  const [methodFilter, setMethodFilter] = useState("All Methods");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [snack, setSnack] = useState<{
     open: boolean;
     msg: string;
     type: "success" | "info" | "error";
   }>({ open: false, msg: "", type: "success" });
 
   // Row menu
-  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
-  const [menuRow, setMenuRow] = React.useState<UserRow | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [menuRow, setMenuRow] = useState<UserRow | null>(null);
   const openMenu = Boolean(menuAnchor);
 
   // ====== Filtering & paging ======
@@ -245,8 +247,8 @@ export default function UserManagement() {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
 
   // ====== Edit popup state ======
-  const [editOpen, setEditOpen] = React.useState(false);
-  const [editModel, setEditModel] = React.useState<UserRow | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editModel, setEditModel] = useState<UserRow | null>(null);
 
   const openEdit = (row: UserRow) => {
     // deep-ish clone for safe editing
@@ -261,6 +263,9 @@ export default function UserManagement() {
     setEditOpen(true);
   };
 
+  const openView = (row: UserRow) => {
+    navigate(`/customer/view/${row.id}`)
+  };
   // ====== Actions ======
   const handleDelete = async (row: UserRow) => {
     try {
@@ -318,7 +323,7 @@ export default function UserManagement() {
   };
 
   // ====== Create view state (kept for parity; still navigate to your create page) ======
-  const [createModel, setCreateModel] = React.useState({
+  const [createModel, setCreateModel] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -466,7 +471,7 @@ export default function UserManagement() {
         </TableHead>
 
         <TableBody>
-          {paged.map((row) => (
+          {paged.map((row: any) => (
             <TableRow key={row.id} hover>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -488,6 +493,7 @@ export default function UserManagement() {
                   onClick={(e) => {
                     setMenuAnchor(e.currentTarget);
                     setMenuRow(row);
+                    setId(row.id)
                   }}
                 >
                   <MoreVertRoundedIcon />
@@ -576,191 +582,191 @@ export default function UserManagement() {
   );
 
   const DetailsView = selected && (
-		<Box sx={{ background: '#F7F8FA', minHeight: '100vh', py: 4 }}>
-			<Container maxWidth="md">
-				{/* Back Nav */}
-				<Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
-					<IconButton
-						onClick={() => {
-							setView('list');
-							setSelected(null);
-						}}
-					>
-						<ArrowBackRoundedIcon />
-					</IconButton>
+    <Box sx={{ background: '#F7F8FA', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="md">
+        {/* Back Nav */}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
+          <IconButton
+            onClick={() => {
+              setView('list');
+              setSelected(null);
+            }}
+          >
+            <ArrowBackRoundedIcon />
+          </IconButton>
 
-					<Breadcrumbs sx={{ color: 'text.secondary', fontSize: 14 }}>
-						<Link underline="hover" color="inherit" onClick={() => setView('list')}>
-							Customer Management
-						</Link>
-						<Typography>Customer Profile</Typography>
-					</Breadcrumbs>
-				</Stack>
+          <Breadcrumbs sx={{ color: 'text.secondary', fontSize: 14 }}>
+            <Link underline="hover" color="inherit" onClick={() => setView('list')}>
+              Customer Management
+            </Link>
+            <Typography>Customer Profile</Typography>
+          </Breadcrumbs>
+        </Stack>
 
-				{/* Header */}
-				<Paper
-					sx={{
-						p: 3,
-						borderRadius: 3,
-						border: '1px solid #DFE3E8',
-						background: 'white',
-						mb: 3
-					}}
-				>
-					<Stack spacing={1}>
-						<Typography sx={{ fontSize: 26, fontWeight: 800 }}>{selected.name}</Typography>
-						<Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-							<StatusChip status={selected.status} />
-						</Stack>
-					</Stack>
-				</Paper>
+        {/* Header */}
+        <Paper
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            border: '1px solid #DFE3E8',
+            background: 'white',
+            mb: 3
+          }}
+        >
+          <Stack spacing={1}>
+            <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{selected.name}</Typography>
+            <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+              <StatusChip status={selected.status} />
+            </Stack>
+          </Stack>
+        </Paper>
 
-				{/* Contact Info */}
-				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
-					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Contact Information</Typography>
+        {/* Contact Info */}
+        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Contact Information</Typography>
 
-					<Stack spacing={2}>
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Customer ID
-							</Typography>
-							<Typography fontWeight={600}>{selected.customerID}</Typography>
-						</Box>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Customer ID
+              </Typography>
+              <Typography fontWeight={600}>{selected.customerID}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Email
-							</Typography>
-							<Typography>{selected.email || '-'}</Typography>
-						</Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Email
+              </Typography>
+              <Typography>{selected.email || '-'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Phone
-							</Typography>
-							<Typography>{selected.phone || '-'}</Typography>
-						</Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Phone
+              </Typography>
+              <Typography>{selected.phone || '-'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Gender
-							</Typography>
-							<Typography>{selected.gender || '-'}</Typography>
-						</Box>
-					</Stack>
-				</Paper>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Gender
+              </Typography>
+              <Typography>{selected.gender || '-'}</Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-				{/* Address */}
-				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
-					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Address Details</Typography>
+        {/* Address */}
+        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Address Details</Typography>
 
-					<Stack spacing={2}>
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Street
-							</Typography>
-							<Typography>{selected.address?.street || '-'}</Typography>
-						</Box>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Street
+              </Typography>
+              <Typography>{selected.address?.street || '-'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								State
-							</Typography>
-							<Typography>{selected.address?.state || '-'}</Typography>
-						</Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                State
+              </Typography>
+              <Typography>{selected.address?.state || '-'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Postal Code
-							</Typography>
-							<Typography>{selected.address?.postalCode || '-'}</Typography>
-						</Box>
-					</Stack>
-				</Paper>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Postal Code
+              </Typography>
+              <Typography>{selected.address?.postalCode || '-'}</Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-				{/* Activity */}
-				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
-					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Account Activity</Typography>
+        {/* Activity */}
+        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Account Activity</Typography>
 
-					<Stack spacing={2}>
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Enrollment Date
-							</Typography>
-							<Typography>{selected.enrollmentDate}</Typography>
-						</Box>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Enrollment Date
+              </Typography>
+              <Typography>{selected.enrollmentDate}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Last Active
-							</Typography>
-							<Typography>{selected.lastActive || '-'}</Typography>
-						</Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Last Active
+              </Typography>
+              <Typography>{selected.lastActive || '-'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Status Active
-							</Typography>
-							<Typography>{selected._isActiveLocal ? 'Yes' : 'No'}</Typography>
-						</Box>
-					</Stack>
-				</Paper>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Status Active
+              </Typography>
+              <Typography>{selected._isActiveLocal ? 'Yes' : 'No'}</Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-				{/* Notification */}
-				<Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
-					<Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Notification Preferences</Typography>
+        {/* Notification */}
+        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #E5E7EB', mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 18 }}>Notification Preferences</Typography>
 
-					<Stack spacing={1.5}>
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								WhatsApp Alerts
-							</Typography>
-							<Typography>{selected.notifications?.whatsapp ? 'Enabled' : 'Disabled'}</Typography>
-						</Box>
+          <Stack spacing={1.5}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                WhatsApp Alerts
+              </Typography>
+              <Typography>{selected.notifications?.whatsapp ? 'Enabled' : 'Disabled'}</Typography>
+            </Box>
 
-						<Box>
-							<Typography variant="body2" color="text.secondary">
-								Email Updates
-							</Typography>
-							<Typography>{selected.notifications?.emailUpdates ? 'Enabled' : 'Disabled'}</Typography>
-						</Box>
-					</Stack>
-				</Paper>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Email Updates
+              </Typography>
+              <Typography>{selected.notifications?.emailUpdates ? 'Enabled' : 'Disabled'}</Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-				{/* Buttons */}
-				<Stack direction="row" spacing={1.5} sx={{ mt: 4 }}>
-					<Button variant="contained" onClick={() => openEdit(selected)} sx={{ borderRadius: 2 }}>
-						Edit User
-					</Button>
-					<Button
-						variant="outlined"
-						color="error"
-						onClick={() => {
-							handleDelete(selected);
-							setView('list');
-							setSelected(null);
-						}}
-						sx={{ borderRadius: 2 }}
-					>
-						Delete
-					</Button>
-				</Stack>
-			</Container>
-		</Box>
-	);
+        {/* Buttons */}
+        <Stack direction="row" spacing={1.5} sx={{ mt: 4 }}>
+          <Button variant="contained" onClick={() => openEdit(selected)} sx={{ borderRadius: 2 }}>
+            Edit User
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => {
+              handleDelete(selected);
+              setView('list');
+              setSelected(null);
+            }}
+            sx={{ borderRadius: 2 }}
+          >
+            Delete
+          </Button>
+        </Stack>
+      </Container>
+    </Box>
+  );
 
 
   // ====== Render ======
-  if (isLoading) return <Typography sx={{ p: 4 }}>Loading…</Typography>;
-  if (isError)
-    return (
-      <Container sx={{ py: 6 }}>
-        <Typography color="error" fontWeight={700}>
-          Failed to load customers
-        </Typography>
-        {/* <Typography variant="body2">{JSON.stringify(error)}</Typography> */}
-      </Container>
-    );
+  // if (isLoading) return <Typography sx={{ p: 4 }}>Loading…</Typography>;
+  // if (isError)
+  //   return (
+  //     <Container sx={{ py: 6 }}>
+  //       <Typography color="error" fontWeight={700}>
+  //         Failed to load customers
+  //       </Typography>
+  //       {/* <Typography variant="body2">{JSON.stringify(error)}</Typography> */}
+  //     </Container>
+  //   );
 
   return (
     <Box sx={{ bgcolor: "#FAFAFB", minHeight: "100vh" }}>
@@ -795,7 +801,8 @@ export default function UserManagement() {
           onClick={() => {
             if (menuRow) {
               setSelected(menuRow);
-              setView("details");
+              // setView("details");
+              openView(menuRow)
             }
             setMenuAnchor(null);
           }}
